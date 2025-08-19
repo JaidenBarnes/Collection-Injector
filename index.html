@@ -7,23 +7,28 @@
     window.onload = () => {
       const target = "https://my.portsmouth.gov.uk/en/AchieveForms/?form_uri=sandbox-publish://AF-Process-26e27e70-f771-47b1-a34d-af276075cede/AF-Stage-cd7cc291-2e59-42cc-8c3f-1f93e132a2c9/definition.json&redirectlink=%2Fen&cancelRedirectLink=%2Fen";
 
-      // Open the form page
+      // Navigate to the form
       const win = window.open(target, "_self");
 
-      // Once loaded, wait 3 seconds before injecting
-      win.addEventListener("load", () => {
-        setTimeout(() => {
-          try {
-            const input = win.document.getElementById("postcode_search");
-            if (input) {
-              input.value = "ABC 123";
-              input.dispatchEvent(new Event("input", { bubbles: true }));
-            }
-          } catch (e) {
-            console.warn("Could not access form (likely cross-origin restriction).");
+      // Keep checking for the input until it exists
+      function tryFill() {
+        try {
+          const input = win.document.getElementById("postcode_search");
+          if (input) {
+            input.value = "ABC 123";
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            console.log("Postcode filled!");
+            return; // stop polling once filled
           }
-        }, 3000);
-      });
+        } catch (e) {
+          // Cross-origin will block this unless run as userscript/bookmarklet
+          console.warn("Cannot access form yet:", e);
+        }
+        setTimeout(tryFill, 1000); // retry every 1 second
+      }
+
+      // Start polling after 3s to give their scripts time to load
+      setTimeout(tryFill, 3000);
     };
   </script>
 </head>
