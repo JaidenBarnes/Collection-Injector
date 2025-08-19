@@ -1,1 +1,0 @@
-# QR-JS-Inject
